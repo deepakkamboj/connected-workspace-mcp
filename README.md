@@ -130,6 +130,8 @@ The workflow rejects mismatched or already-published versions, runs tests,
 type/build/format checks, audits dependencies, tests an installed tarball, and
 publishes with npm provenance. It then verifies the version on npm. Publishing
 a prerelease GitHub Release does not publish to the `latest` npm tag.
+If npm processing delays visibility, use the workflow's `verify_only` option
+to recheck the submitted version without publishing it again.
 
 See the [publishing guide](docs/publishing.md) for commands, token setup, manual
 runs, and rollback instructions.

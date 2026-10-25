@@ -87,6 +87,20 @@ Both paths require a valid existing secret and an unused version matching the
 selected commit. A registry outage fails the availability check rather than
 being mistaken for an unpublished version.
 
+### npm Processing Delays
+
+npm may accept a publish before making the version visible. The workflow waits
+up to ten minutes for a 404 response to become a visible package version.
+Other registry errors fail explicitly.
+
+If npm accepted the publish but verification timed out, do not publish the
+same version again. Run the workflow with **verify_only** enabled; it checks
+visibility without using the npm secret or rerunning publish:
+
+```powershell
+gh workflow run publish.yml --repo deepakkamboj/connected-workspace-mcp --ref YOUR_RELEASE_BRANCH -f version=1.0.1 -f verify_only=true
+```
+
 For a manual release:
 
 ```powershell
