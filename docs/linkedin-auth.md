@@ -17,9 +17,10 @@ Configure:
 ```dotenv
 LINKEDIN_CLIENT_ID=your-client-id
 LINKEDIN_CLIENT_SECRET=your-client-secret
-LINKEDIN_REDIRECT_URI=http://localhost:3001/callback
-LINKEDIN_API_VERSION=202609
 ```
+
+The redirect URI and API version default to `http://localhost:3001/callback`
+and `202609`; they do not need environment entries unless overriding them.
 
 ## Required Scopes
 
@@ -44,6 +45,9 @@ After a global npm installation:
 connected-workspace-linkedin-auth
 ```
 
+Add `--env-file <path>` when using a private environment file outside the
+current directory.
+
 The callback validates OAuth state, exchanges the authorization code, reads the
 OpenID member identifier, and persists the token with its expiry metadata.
 
@@ -53,6 +57,11 @@ Standard LinkedIn member APIs can read basic OpenID identity information and
 manage posts when the app has approved products and scopes. They do not permit
 arbitrary edits to headline, experience, education, or skills. Messaging and
 some analytics require partner-only access.
+
+Listing and reading member posts generally require `r_member_social`, which is
+restricted; `w_member_social` alone does not grant those read operations.
+Post engagement also depends on approved API products and permissions. The
+server exposes these tools but cannot grant access to restricted endpoints.
 
 LinkedIn access tokens expire. If LinkedIn does not grant your application a
 refresh token, rerun authorization after expiry.

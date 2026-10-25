@@ -20,11 +20,25 @@ function mimeMessage(input: {
   inReplyTo?: string;
   references?: string;
 }): string {
+  const headerValues = [
+    ...input.to,
+    ...(input.cc || []),
+    ...(input.bcc || []),
+    input.subject,
+    input.inReplyTo,
+    input.references,
+  ];
+  if (headerValues.some((value) => value && /[\r\n]/.test(value))) {
+    throw new Error('Email headers must not contain line breaks.');
+  }
+  const subject = /[^\x20-\x7e]/.test(input.subject)
+    ? `=?UTF-8?B?${Buffer.from(input.subject).toString('base64')}?=`
+    : input.subject;
   const headers = [
     `To: ${input.to.join(', ')}`,
     ...(input.cc?.length ? [`Cc: ${input.cc.join(', ')}`] : []),
     ...(input.bcc?.length ? [`Bcc: ${input.bcc.join(', ')}`] : []),
-    `Subject: ${input.subject}`,
+    `Subject: ${subject}`,
     ...(input.inReplyTo ? [`In-Reply-To: ${input.inReplyTo}`] : []),
     ...(input.references ? [`References: ${input.references}`] : []),
     'MIME-Version: 1.0',

@@ -159,6 +159,7 @@ describe('Gmail tools', () => {
         },
       },
     });
+
     gmail.users.messages.send.mockResolvedValue({
       data: { id: 'reply-1', threadId: 'thread-3' },
     });
@@ -180,6 +181,30 @@ describe('Gmail tools', () => {
       'References: <earlier@example.com> <message@example.com>',
     );
     expect(parsedText(result)).toEqual({ id: 'reply-1', threadId: 'thread-3' });
+  });
+
+  it('rejects header injection without sending an email', async () => {
+    const result = await harness.handler('gmail_send_message')({
+      to: ['to@example.com'],
+      subject: 'Hello\r\nBcc: unexpected@example.com',
+      body: 'Message body',
+    });
+    expect(result.isError).toBe(true);
+    expect(gmail.users.messages.send).not.toHaveBeenCalled();
+  });
+
+  it('encodes non-ASCII subjects as UTF-8 MIME headers', async () => {
+    gmail.users.messages.send.mockResolvedValue({ data: { id: 'sent' } });
+    const subject = 'Hello \u00e9';
+    await harness.handler('gmail_send_message')({
+      to: ['to@example.com'],
+      subject,
+      body: 'Message body',
+    });
+    const raw = gmail.users.messages.send.mock.calls[0][0].requestBody.raw;
+    expect(Buffer.from(raw, 'base64url').toString('utf8')).toContain(
+      `Subject: =?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`,
+    );
   });
 
   it('adds and removes labels', async () => {

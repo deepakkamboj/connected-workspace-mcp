@@ -6,13 +6,17 @@ export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/gmail.send',
   'https://www.googleapis.com/auth/gmail.compose',
   'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/contacts',
+  'https://www.googleapis.com/auth/drive',
+  'https://www.googleapis.com/auth/tasks',
 ];
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value)
     throw new Error(
-      `${name} is required. Copy .env.example to .env and run npm run auth:google.`,
+      `${name} is required. Configure your environment file and run connected-workspace-google-auth --env-file <path>.`,
     );
   return value;
 }
@@ -27,7 +31,9 @@ export function createGoogleAuth() {
   const refreshToken =
     storedTokens?.refreshToken || process.env.GOOGLE_REFRESH_TOKEN;
   if (!refreshToken)
-    throw new Error('Google is not authorized. Run npm run auth:google once.');
+    throw new Error(
+      'Google is not authorized. Run connected-workspace-google-auth --env-file <path> once.',
+    );
   auth.setCredentials({
     access_token: storedTokens?.accessToken,
     refresh_token: refreshToken,

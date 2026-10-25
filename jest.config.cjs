@@ -1,8 +1,7 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest/presets/default-esm',
+  preset: 'ts-jest',
   testEnvironment: 'node',
-  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
@@ -12,9 +11,13 @@ module.exports = {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        useESM: true,
-        tsconfig: '<rootDir>/tsconfig.test.json',
-        diagnostics: { ignoreCodes: [151002] },
+        tsconfig: {
+          module: 'CommonJS',
+          moduleResolution: 'Node',
+          target: 'ES2022',
+          esModuleInterop: true,
+          isolatedModules: true,
+        },
       },
     ],
   },

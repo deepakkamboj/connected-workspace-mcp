@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import '../../config/bootstrap.js';
+import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { google } from 'googleapis';
 import { saveGoogleTokens, TOKEN_STORE_PATH } from '../token-store.js';
-import { logger } from '../../logging/logger.js';
+import { logger, publicErrorMessage } from '../../logging/logger.js';
 import { GOOGLE_SCOPES } from './index.js';
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -17,18 +18,24 @@ if (!clientId || !clientSecret) {
 }
 
 const callback = new URL(redirectUri);
+const state = randomBytes(24).toString('hex');
 const auth = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 const authorizationUrl = auth.generateAuthUrl({
   access_type: 'offline',
   include_granted_scopes: true,
   prompt: 'consent',
   scope: GOOGLE_SCOPES,
+  state,
 });
 
 const server = createServer(async (request, response) => {
   const requestUrl = new URL(request.url || '/', redirectUri);
   if (requestUrl.pathname !== callback.pathname) {
     response.writeHead(404).end('Not found');
+    return;
+  }
+  if (requestUrl.searchParams.get('state') !== state) {
+    response.writeHead(400).end('Invalid OAuth state.');
     return;
   }
 
@@ -73,7 +80,7 @@ const server = createServer(async (request, response) => {
       .writeHead(500)
       .end('Google authorization failed. Check the terminal.');
     await logger.error('Google authorization failed', error);
-    console.error(error);
+    console.error(publicErrorMessage(error));
     process.exitCode = 1;
   } finally {
     server.close();

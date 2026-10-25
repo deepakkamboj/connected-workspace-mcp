@@ -13,12 +13,12 @@ export function createLinkedInAuth(): LinkedInAuth {
     storedTokens?.accessToken || process.env.LINKEDIN_ACCESS_TOKEN;
   if (!accessToken)
     throw new Error(
-      'LinkedIn is not authorized. Run npm run auth:linkedin once.',
+      'LinkedIn is not authorized. Run connected-workspace-linkedin-auth --env-file <path> once.',
     );
   const userUrn = storedTokens?.userUrn || process.env.LINKEDIN_USER_URN;
   if (!userUrn)
     throw new Error(
-      'LinkedIn user URN is missing. Run npm run auth:linkedin once.',
+      'LinkedIn user URN is missing. Run connected-workspace-linkedin-auth --env-file <path> once.',
     );
   return {
     accessToken,

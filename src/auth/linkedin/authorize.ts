@@ -3,7 +3,7 @@ import '../../config/bootstrap.js';
 import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { saveLinkedInTokens, TOKEN_STORE_PATH } from '../token-store.js';
-import { logger } from '../../logging/logger.js';
+import { logger, publicErrorMessage } from '../../logging/logger.js';
 
 const clientId = process.env.LINKEDIN_CLIENT_ID;
 const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
@@ -105,7 +105,7 @@ const server = createServer(async (request, response) => {
       .writeHead(500)
       .end('LinkedIn authorization failed. Check the terminal.');
     await logger.error('LinkedIn authorization failed', error);
-    console.error(error);
+    console.error(publicErrorMessage(error));
     process.exitCode = 1;
   } finally {
     server.close();

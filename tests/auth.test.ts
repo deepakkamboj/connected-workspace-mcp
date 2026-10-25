@@ -1,4 +1,5 @@
-import { rm } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { createGoogleAuth, GOOGLE_SCOPES } from '../src/auth/google/index.js';
 import { createLinkedInAuth } from '../src/auth/linkedin/index.js';
 import {
@@ -84,4 +85,23 @@ describe('persistent authentication', () => {
     expect(() => createGoogleAuth()).toThrow('Google is not authorized');
     expect(() => createLinkedInAuth()).toThrow('LinkedIn is not authorized');
   });
+
+  it.each([
+    '{"google":{"refreshToken":"private-value"',
+    '{"google":{"refreshToken":123}}',
+    '{"linkedin":{"accessToken":"private-value"}}',
+    'null',
+  ])(
+    'rejects malformed credentials without exposing their contents',
+    async (contents) => {
+      await mkdir(dirname(TOKEN_STORE_PATH), { recursive: true });
+      await writeFile(TOKEN_STORE_PATH, contents);
+      expect(() => loadGoogleTokens()).toThrow('Could not read token store');
+      try {
+        loadGoogleTokens();
+      } catch (error) {
+        expect(String(error)).not.toContain('private-value');
+      }
+    },
+  );
 });
