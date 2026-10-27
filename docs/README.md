@@ -1,7 +1,8 @@
 # Connected Workspace MCP Documentation
 
 Connected Workspace MCP connects MCP-compatible assistants to Gmail, Google
-Calendar, and LinkedIn through a TypeScript stdio server.
+Calendar, Sheets, Drive, Contacts, Tasks, and LinkedIn through a TypeScript
+stdio server.
 
 ## Guides
 
@@ -23,3 +24,5 @@ Calendar, and LinkedIn through a TypeScript stdio server.
   confirmation according to its own policy.
 
 Never commit `.env`, token files, or log files.
+
+- [Consumer examples and minimal environment setup](../examples/USAGE.md)

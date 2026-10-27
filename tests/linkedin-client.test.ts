@@ -164,4 +164,24 @@ describe('LinkedIn REST client', () => {
       new LinkedInClient().getPost('urn:li:share:blocked'),
     ).rejects.toThrow('LinkedIn API 403: Permission denied');
   });
+
+  it('does not report success when the post identifier is missing', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({}, { status: 201 }));
+    await expect(
+      new LinkedInClient().publishText('Post', 'PUBLIC'),
+    ).rejects.toThrow('Check your feed before retrying');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects an unsupported image before requesting an upload', async () => {
+    await expect(
+      new LinkedInClient().publishImage(
+        'Post',
+        'image.txt',
+        undefined,
+        'PUBLIC',
+      ),
+    ).rejects.toThrow('GIF, JPEG, or PNG');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

@@ -88,13 +88,14 @@ export class LinkedInClient {
     altText: string | undefined,
     visibility: 'PUBLIC' | 'CONNECTIONS',
   ): Promise<string> {
+    const contentType = imageContentType(imagePath);
+    const bytes = await readFile(imagePath);
     const image = await this.initializeImageUpload();
-    const bytes = await readFile(image.uploadUrl ? imagePath : '');
     const upload = await fetch(image.uploadUrl, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${createLinkedInAuth().accessToken}`,
-        'Content-Type': imageContentType(imagePath),
+        'Content-Type': contentType,
       },
       body: bytes,
     });
@@ -158,6 +159,12 @@ export class LinkedInClient {
         isReshareDisabledByAuthor: false,
       }),
     });
-    return result.headers.get('x-restli-id') || '';
+    const postUrn = result.headers.get('x-restli-id');
+    if (!postUrn) {
+      throw new Error(
+        'LinkedIn accepted the post but returned no post URN. Check your feed before retrying to avoid duplicate posts.',
+      );
+    }
+    return postUrn;
   }
 }

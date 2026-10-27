@@ -2,8 +2,13 @@
   "servers": {
     "connected-workspace": {
       "type": "stdio",
-      "command": "node",
-      "args": ["${workspaceFolder}/dist/src/index.js"]
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "connected-workspace-mcp@1.0.2",
+        "--env-file",
+        "D:\\environment-file\\.env"
+      ]
     }
   }
 }

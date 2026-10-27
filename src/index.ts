@@ -6,6 +6,10 @@ import { google } from 'googleapis';
 import { createGoogleAuth } from './auth/google/index.js';
 import { registerCalendarTools } from './tools/calendar/index.js';
 import { registerGmailTools } from './tools/gmail/index.js';
+import { registerSheetsTools } from './tools/sheets/index.js';
+import { registerDriveTools } from './tools/drive/index.js';
+import { registerContactsTools } from './tools/contacts/index.js';
+import { registerTasksTools } from './tools/tasks/index.js';
 import { registerLinkedInTools } from './tools/linkedin/index.js';
 import { logger, LOG_FILE_PATH } from './logging/logger.js';
 import { getPackageMetadata } from './utils/common.js';
@@ -13,12 +17,20 @@ import { getPackageMetadata } from './utils/common.js';
 const auth = createGoogleAuth();
 const gmail = google.gmail({ version: 'v1', auth });
 const calendar = google.calendar({ version: 'v3', auth });
+const sheets = google.sheets({ version: 'v4', auth });
+const drive = google.drive({ version: 'v3', auth });
+const people = google.people({ version: 'v1', auth });
+const tasks = google.tasks({ version: 'v1', auth });
 const packageMetadata = getPackageMetadata();
 const server = new McpServer(packageMetadata);
 
 try {
   registerGmailTools(server, gmail);
   registerCalendarTools(server, calendar);
+  registerSheetsTools(server, sheets);
+  registerDriveTools(server, drive);
+  registerContactsTools(server, people);
+  registerTasksTools(server, tasks);
   registerLinkedInTools(server);
   await logger.info('All MCP tools registered');
 } catch (error) {

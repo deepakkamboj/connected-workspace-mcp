@@ -31,18 +31,18 @@ npx -y connected-workspace-mcp --env-file "C:\Users\you\.connected-workspace-mcp
 
 ## Configure The Environment
 
+See [examples/USAGE.md](../examples/USAGE.md) for a complete walkthrough and
+[examples/.env.example](../examples/.env.example) for the minimal template.
+
 Create a private configuration directory, copy `.env.example` from the package
 or repository, and populate the provider client settings. Pass its path with
 `--env-file` when the current working directory does not contain `.env`.
 
-On Windows, explicit persistent paths can look like:
-
-```dotenv
-PA_MCP_TOKEN_PATH=C:/Users/you/.connected-workspace-mcp/tokens.json
-PA_MCP_LOG_PATH=C:/Users/you/.connected-workspace-mcp/server.log
-```
-
-See [configuration.md](configuration.md) for every setting.
+Only Google client credentials are required to start the server after OAuth
+authorization. LinkedIn client credentials are needed only for its optional
+authorization. Tokens and logs default to your user profile; no path overrides
+or token environment values are required. See [configuration.md](configuration.md)
+for optional settings.
 
 ## VS Code MCP Configuration
 

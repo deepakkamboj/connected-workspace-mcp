@@ -33,9 +33,13 @@ npm run format:check
 npm test
 npm run check
 npm run build
+npm audit --audit-level=high
+npm run test:package
 ```
 
-Tests must not contact live providers or mutate real accounts.
+Tests must not contact live providers or mutate real accounts. The package
+smoke test installs a temporary tarball with production dependencies and
+requires a reachable npm registry, but uses no real provider credentials.
 
 ## Pull Requests
 

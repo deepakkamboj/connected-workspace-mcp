@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
+import * as z from 'zod/v4';
 
 export interface StoredGoogleTokens {
   accessToken?: string;
@@ -16,10 +17,25 @@ export interface StoredLinkedInTokens {
   expiresAt?: number;
 }
 
-interface TokenStore {
-  google?: StoredGoogleTokens;
-  linkedin?: StoredLinkedInTokens;
-}
+const tokenStoreSchema = z.object({
+  google: z
+    .object({
+      accessToken: z.string().optional(),
+      refreshToken: z.string().min(1),
+      expiryDate: z.number().optional(),
+    })
+    .optional(),
+  linkedin: z
+    .object({
+      accessToken: z.string().min(1),
+      userUrn: z.string().min(1),
+      refreshToken: z.string().optional(),
+      expiresAt: z.number().optional(),
+    })
+    .optional(),
+});
+
+type TokenStore = z.infer<typeof tokenStoreSchema>;
 
 export const TOKEN_STORE_PATH =
   process.env.PA_MCP_TOKEN_PATH || join(homedir(), '.pa-mcp', 'tokens.json');
@@ -27,10 +43,12 @@ export const TOKEN_STORE_PATH =
 function readStore(): TokenStore {
   if (!existsSync(TOKEN_STORE_PATH)) return {};
   try {
-    return JSON.parse(readFileSync(TOKEN_STORE_PATH, 'utf8')) as TokenStore;
-  } catch (error) {
+    return tokenStoreSchema.parse(
+      JSON.parse(readFileSync(TOKEN_STORE_PATH, 'utf8')),
+    );
+  } catch {
     throw new Error(
-      `Could not read token store at ${TOKEN_STORE_PATH}: ${String(error)}`,
+      `Could not read token store at ${TOKEN_STORE_PATH}. Check its JSON format, credential fields, and file permissions.`,
     );
   }
 }
