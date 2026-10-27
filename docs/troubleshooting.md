@@ -3,6 +3,51 @@
 Never include client secrets, access tokens, refresh tokens, complete email
 bodies, or complete logs in issues or support requests.
 
+## npm Installation And Cache Errors
+
+An `ERR_MODULE_NOT_FOUND` referencing an SDK file inside npm's `_npx`
+directory happens before MCP initialization and is not an OAuth error.
+An interrupted or incomplete cached installation can omit files that are
+present in the published SDK tarball.
+
+First check which registry is being used and whether it lists the exact version:
+
+```powershell
+npm config get registry
+npm view connected-workspace-mcp@1.0.2 version --prefer-online
+```
+
+If a corporate mirror lists only an older release, ask its administrator to
+refresh or approve the new version. Where organizational policy allows direct
+npm access, specify `--registry=https://registry.npmjs.org/` on the npm command.
+A TLS error requires your organization's approved proxy or certificate
+configuration; never disable TLS verification.
+
+To bypass a damaged `npx` installation without deleting the shared npm cache,
+use a new dedicated cache directory:
+
+```powershell
+npx --cache "$env:LOCALAPPDATA\connected-workspace-mcp\npm-cache-v1.0.2" -y connected-workspace-mcp@1.0.2 --env-file "D:\environment-file\.env"
+```
+
+Equivalent MCP Arguments JSON:
+
+```json
+[
+  "--cache",
+  "C:\\Users\\you\\AppData\\Local\\connected-workspace-mcp\\npm-cache-v1.0.2",
+  "-y",
+  "connected-workspace-mcp@1.0.2",
+  "--env-file",
+  "D:\\environment-file\\.env"
+]
+```
+
+Replace `you` with your Windows account. A fresh cache cannot make an
+unavailable registry version appear; resolve mirror access first if necessary.
+Your environment file and OAuth token store should not be deleted to repair
+an npm installation.
+
 ## Google `invalid_grant`
 
 In Google Cloud Console, verify that Gmail, Calendar, Sheets, Drive, People,

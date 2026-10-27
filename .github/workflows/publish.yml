@@ -138,3 +138,6 @@ jobs:
           }
           throw new Error('Published version is not visible yet. Inspect npm before retrying the release.');
           NODE
+
+      - name: Test published npm consumption
+        run: npm run test:published

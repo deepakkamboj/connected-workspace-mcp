@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const metadata = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+const published = process.argv.includes('--published');
 const directory = await mkdtemp(join(tmpdir(), 'connected-workspace-package-'));
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run this check with npm run test:package.');
@@ -45,6 +46,18 @@ function start(executable, args) {
     lines,
     stderr: () => stderr,
     async close() {
+      child.stdin.end();
+      let timer;
+      try {
+        await Promise.race([
+          exited,
+          new Promise((resolve) => {
+            timer = setTimeout(resolve, 5_000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
       if (child.exitCode === null && child.signalCode === null) child.kill();
       await exited;
       lines.close();
@@ -101,14 +114,27 @@ async function checkAuthorization(executable, provider, envFile) {
   }
 }
 
-async function checkServer(executable, envFile) {
+async function checkServer(executable, envFile, packageSpec) {
   const tokenPath = join(directory, 'tokens.json');
   await writeFile(tokenPath, '{"google":{"refreshToken":"package-test"}}');
   await writeFile(
     envFile,
     `GOOGLE_CLIENT_ID=package-test\nGOOGLE_CLIENT_SECRET=package-test\nPA_MCP_TOKEN_PATH=${JSON.stringify(tokenPath)}\nPA_MCP_LOG_PATH=${JSON.stringify(join(directory, 'server.log'))}\n`,
   );
-  const process = start(executable, ['--env-file', envFile]);
+  const process = packageSpec
+    ? start(npmCli, [
+        'exec',
+        '--yes',
+        '--cache',
+        join(directory, 'npx-cache'),
+        '--package',
+        packageSpec,
+        '--',
+        'connected-workspace-mcp',
+        '--env-file',
+        envFile,
+      ])
+    : start(executable, ['--env-file', envFile]);
   let id = 0;
   const pending = new Map();
   let protocolError;
@@ -123,12 +149,22 @@ async function checkServer(executable, envFile) {
   async function request(method, params = {}) {
     const requestId = ++id;
     const response = await new Promise((resolve, reject) => {
-      const timer = setTimeout(
-        () => reject(new Error(`${method} timed out: ${process.stderr()}`)),
-        20_000,
-      );
+      const onExit = (code) => {
+        clearTimeout(timer);
+        pending.delete(requestId);
+        reject(
+          new Error(`${method}: process exited (${code}): ${process.stderr()}`),
+        );
+      };
+      const timer = setTimeout(() => {
+        process.child.off('exit', onExit);
+        pending.delete(requestId);
+        reject(new Error(`${method} timed out: ${process.stderr()}`));
+      }, 120_000);
+      process.child.once('exit', onExit);
       pending.set(requestId, (message) => {
         clearTimeout(timer);
+        process.child.off('exit', onExit);
         pending.delete(requestId);
         resolve(message);
       });
@@ -187,7 +223,14 @@ async function checkServer(executable, envFile) {
 try {
   const [packed] = JSON.parse(
     npm(
-      ['pack', '--json', '--ignore-scripts', '--pack-destination', directory],
+      [
+        'pack',
+        ...(published ? [`${metadata.name}@${metadata.version}`] : []),
+        '--json',
+        '--ignore-scripts',
+        '--pack-destination',
+        directory,
+      ],
       root,
     ),
   );
@@ -259,8 +302,15 @@ try {
     join(installed, metadata.bin['connected-workspace-mcp']),
     envFile,
   );
+  await checkServer(
+    undefined,
+    envFile,
+    published
+      ? `${metadata.name}@${metadata.version}`
+      : join(directory, packed.filename),
+  );
   console.log(
-    `Package verified: ${files.size} files, three executables, 42 MCP tools, isolated consumer installation, no live provider calls.`,
+    `Package verified: ${files.size} files, three executables, 42 MCP tools, isolated consumer installation and fresh npm exec cache${published ? ' from the published npm version' : ''}, no live provider calls.`,
   );
 } finally {
   await rm(directory, { recursive: true, force: true });

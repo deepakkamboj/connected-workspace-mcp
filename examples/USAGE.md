@@ -42,7 +42,7 @@ it or paste its contents into a chat.
 Install globally:
 
 ```powershell
-npm install --global connected-workspace-mcp
+npm install --global connected-workspace-mcp@1.0.2
 connected-workspace-google-auth --env-file "$HOME\.connected-workspace-mcp\.env"
 # Optional, after completing the LinkedIn app setup:
 connected-workspace-linkedin-auth --env-file "$HOME\.connected-workspace-mcp\.env"
@@ -56,8 +56,8 @@ Alternatively, use `npm exec` without installing globally. Use `--package`
 explicitly to select the package's authorization executables:
 
 ```powershell
-npm exec --yes --package=connected-workspace-mcp -- connected-workspace-google-auth --env-file "$HOME\.connected-workspace-mcp\.env"
-npm exec --yes --package=connected-workspace-mcp -- connected-workspace-linkedin-auth --env-file "$HOME\.connected-workspace-mcp\.env"
+npm exec --yes --package=connected-workspace-mcp@1.0.2 -- connected-workspace-google-auth --env-file "$HOME\.connected-workspace-mcp\.env"
+npm exec --yes --package=connected-workspace-mcp@1.0.2 -- connected-workspace-linkedin-auth --env-file "$HOME\.connected-workspace-mcp\.env"
 ```
 
 ## 3. Configure VS Code
@@ -73,7 +73,7 @@ Windows account name:
       "command": "npx",
       "args": [
         "-y",
-        "connected-workspace-mcp",
+        "connected-workspace-mcp@1.0.2",
         "--env-file",
         "C:\\Users\\you\\.connected-workspace-mcp\\.env"
       ]
@@ -94,7 +94,42 @@ On macOS or Linux, use an absolute path such as
 Start the server through your MCP host and inspect its tool list. Running the
 command directly in a terminal waits for MCP JSON-RPC input; it is not an
 interactive command prompt. For reproducible deployments, pin a published
-version in the package argument, for example `connected-workspace-mcp@1.0.0`.
+version in the package argument, for example `connected-workspace-mcp@1.0.2`.
+
+### Windows Add MCP Server Form
+
+No source checkout, build, or local JavaScript entry point is required:
+
+| Field                 | Value                                             |
+| --------------------- | ------------------------------------------------- |
+| Server name           | `connected-workspace`                             |
+| Server type           | Local                                             |
+| Command               | `npx.cmd`                                         |
+| Timeout               | 120 seconds                                       |
+| Environment variables | Empty; the private environment file supplies them |
+
+For an environment file at `D:\environment-file\.env`, paste this JSON array
+into the Arguments field:
+
+```json
+[
+  "-y",
+  "connected-workspace-mcp@1.0.2",
+  "--env-file",
+  "D:\\environment-file\\.env"
+]
+```
+
+In a space-separated Arguments field, use single backslashes instead:
+
+```text
+-y connected-workspace-mcp@1.0.2 --env-file "D:\environment-file\.env"
+```
+
+The host runs the npm-installed command locally; the repository is not used.
+The host must run under the same Windows account that completed authorization.
+If your npm mirror does not yet list the version, see
+[registry and cache troubleshooting](../docs/troubleshooting.md#npm-installation-and-cache-errors).
 
 ## 4. Try Read-Only Requests
 

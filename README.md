@@ -21,7 +21,7 @@ server can restart without repeated authorization.
 Requires Node.js 20 or newer.
 
 ```powershell
-npm install --global connected-workspace-mcp
+npm install --global connected-workspace-mcp@1.0.2
 ```
 
 Configure the provider credentials described in the auth guides, then run:
@@ -35,7 +35,7 @@ connected-workspace-mcp
 With `npx`, keep credentials in a private file and pass only its path:
 
 ```powershell
-npx -y connected-workspace-mcp --env-file "C:\Users\you\.connected-workspace-mcp\.env"
+npx -y connected-workspace-mcp@1.0.2 --env-file "C:\Users\you\.connected-workspace-mcp\.env"
 ```
 
 LinkedIn is optional. The server can run with only Google configured.
@@ -50,7 +50,7 @@ LinkedIn is optional. The server can run with only Google configured.
       "command": "npx",
       "args": [
         "-y",
-        "connected-workspace-mcp",
+        "connected-workspace-mcp@1.0.2",
         "--env-file",
         "C:\\Users\\you\\.connected-workspace-mcp\\.env"
       ]
@@ -61,6 +61,25 @@ LinkedIn is optional. The server can run with only Google configured.
 
 The process can instead inherit provider environment variables directly. Never
 pass client secrets or tokens as command-line arguments.
+
+On Windows, use `npx.cmd` if your host cannot launch `npx`. For the Add MCP
+Server form, select **Local**, set the command to `npx.cmd`, leave environment
+variables empty, use a 120-second timeout, and paste these arguments for a
+private environment file at `D:\environment-file\.env`:
+
+```json
+[
+  "-y",
+  "connected-workspace-mcp@1.0.2",
+  "--env-file",
+  "D:\\environment-file\\.env"
+]
+```
+
+No source checkout or local build is required. Authorize Google once using
+the installed executable or `npm exec` as shown in the
+[usage guide](examples/USAGE.md). If npm cannot find the version or reports
+missing SDK files, see [npm troubleshooting](docs/troubleshooting.md#npm-installation-and-cache-errors).
 
 ## Documentation
 

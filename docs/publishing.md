@@ -54,6 +54,12 @@ initialization and all 42 tools. It uses fake credentials and never calls live
 providers. It does require access to the configured npm registry for dependency
 installation. The temporary installation is removed afterward.
 
+The check also launches the package through `npm exec` with an empty dedicated
+cache and verifies its initialize handshake and all 42 tools. After publishing,
+the workflow runs `npm run test:published` to download the actual published
+version and repeat the installed-package and fresh-cache npm execution checks.
+This tests npm-only consumption, not a local repository entry point.
+
 The lockfile intentionally omits registry-specific `resolved` URLs so `npm ci`
 uses the consumer's configured registry with locked versions and integrity
 hashes, rather than requiring the maintainer's package mirror.
